@@ -11,7 +11,7 @@
 		6932C3EF2AF86C8300770856 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6932C3EE2AF86C8300770856 /* ContentView.swift */; };
 		6932C3F12AF86C8400770856 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6932C3F02AF86C8400770856 /* Assets.xcassets */; };
 		6932C3F42AF86C8400770856 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6932C3F32AF86C8400770856 /* Preview Assets.xcassets */; };
-		6932C3FC2AF86CB600770856 /* CommandViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6932C3FB2AF86CB600770856 /* CommandViewModel.swift */; };
+		6932C3FC2AF86CB600770856 /* TermWindowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6932C3FB2AF86CB600770856 /* TermWindowViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,7 +21,7 @@
 		6932C3F02AF86C8400770856 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6932C3F32AF86C8400770856 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		6932C3F52AF86C8400770856 /* JTerm.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JTerm.entitlements; sourceTree = "<group>"; };
-		6932C3FB2AF86CB600770856 /* CommandViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandViewModel.swift; sourceTree = "<group>"; };
+		6932C3FB2AF86CB600770856 /* TermWindowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermWindowViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +56,7 @@
 			children = (
 				6932C3EC2AF86C8300770856 /* JTermApp.swift */,
 				6932C3EE2AF86C8300770856 /* ContentView.swift */,
-				6932C3FB2AF86CB600770856 /* CommandViewModel.swift */,
+				6932C3FB2AF86CB600770856 /* TermWindowViewModel.swift */,
 				6932C3F02AF86C8400770856 /* Assets.xcassets */,
 				6932C3F52AF86C8400770856 /* JTerm.entitlements */,
 				6932C3F22AF86C8400770856 /* Preview Content */,
@@ -144,7 +144,7 @@
 			files = (
 				6932C3EF2AF86C8300770856 /* ContentView.swift in Sources */,
 				6932C3ED2AF86C8300770856 /* JTermApp.swift in Sources */,
-				6932C3FC2AF86CB600770856 /* CommandViewModel.swift in Sources */,
+				6932C3FC2AF86CB600770856 /* TermWindowViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
