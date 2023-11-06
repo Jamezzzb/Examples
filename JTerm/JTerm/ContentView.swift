@@ -8,23 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var commandViewModel: CommandViewModel
+    @ObservedObject var viewModel: TermWindowViewModel
     var body: some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 VStack {
-                    Text(commandViewModel.output)
+                    Text(viewModel.output)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .font(.custom("ComicCode-Medium", size: 20))
                         .foregroundStyle(Color.green)
                     HStack(spacing: .zero) {
-                        Text(commandViewModel.pwd)
+                        Text(viewModel.pwd)
                             .font(.custom("ComicCode-Medium", size: 20))
                             .foregroundStyle(.cyan)
-                        InputView(viewModel: commandViewModel.textViewModel, commandViewModel: commandViewModel)
+                        InputView(textViewModel: viewModel.textViewModel, viewModel: viewModel)
                             .id(1)
                     }
-                }.onReceive(commandViewModel.output.publisher) { _ in
+                }.onReceive(viewModel.output.publisher) { _ in
                     scrollProxy.scrollTo(1)
                 }
             }
@@ -35,18 +35,18 @@ struct ContentView: View {
 }
 
 struct InputView: View {
-    @ObservedObject var viewModel: TextViewModel
-    @ObservedObject var commandViewModel: CommandViewModel
+    @ObservedObject var textViewModel: TextViewModel
+    @ObservedObject var viewModel: TermWindowViewModel
     var body: some View {
-        TextField("", text: $viewModel.text)
+        TextField("", text: $textViewModel.text)
             .font(.custom("ComicCode-Medium", size: 20))
             .foregroundStyle(Color.green)
             .onSubmit {
-                try? commandViewModel.zsh()
+                try? viewModel.zsh()
             }
     }
 }
 
 #Preview {
-    ContentView(commandViewModel: CommandViewModel())
+    ContentView(viewModel: TermWindowViewModel())
 }

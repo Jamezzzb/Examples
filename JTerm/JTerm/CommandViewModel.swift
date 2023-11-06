@@ -1,45 +1,49 @@
 //
-//  CommandViewModel.swift
+//  TermWindowViewModel.swift
 //  JTerm
 //
 //  Created by James Brown on 11/5/23.
 //
 
 import Foundation
-class TermSession: NSObject {
-    var task: Process?
-    var pty: FileHandle?
-    var tty: FileHandle?
-    var data: String = ""
-    var cachedOutput: String = ""
-    var dataBuffer: String = ""
-    weak var observed: CommandViewModel?
+/// modified from https://stackoverflow.com/a/55230753
+/// creates a pair of parent and child pseudo-terminal `FileHandle` objects
+class PseudoTTYSession: NSObject {
+    private var task: Process?
+    private var childHandle: FileHandle?
+    private var parentHandle: FileHandle?
+    // TODO: not currently using this
+    private var cachedOutput: String = ""
+    private weak var observed: TermWindowViewModel?
+    private var home: String = "\(FileManager.default.homeDirectoryForCurrentUser.lastPathComponent)"
     
-    init(observed: CommandViewModel) {
+    init(observed: TermWindowViewModel) {
         self.observed = observed
         self.task = Process()
-        var ttyFD: Int32 = 0
-        ttyFD = posix_openpt(O_RDWR)
-        grantpt(ttyFD)
-        unlockpt(ttyFD)
-        self.tty = FileHandle.init(fileDescriptor: ttyFD, closeOnDealloc: true)
-        let ptyPath = String.init(cString: ptsname(ttyFD))
-        self.pty = FileHandle.init(forUpdatingAtPath: ptyPath)
+        var parentFD: Int32 = 0
+        parentFD = posix_openpt(O_RDWR)
+        grantpt(parentFD)
+        unlockpt(parentFD)
+        self.parentHandle = FileHandle.init(fileDescriptor: parentFD, closeOnDealloc: true)
+        let childPath = String.init(cString: ptsname(parentFD))
+        self.childHandle = FileHandle.init(forUpdatingAtPath: childPath)
         self.task?.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        //MARK: make interactive
+        // set "-i" for interactive
         self.task?.arguments = ["-i"]
-        self.task?.standardOutput = pty
-        self.task?.standardInput = pty
-        self.task?.standardError = pty
+        self.task?.standardOutput = childHandle
+        self.task?.standardInput = childHandle
+        self.task?.standardError = childHandle
     }
     
+    // TODO: This won't scale well, find better way to do or at least absract
     func pollData() {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             while self?.task?.isRunning == .some(true) {
-                if let data = (self?.tty?.availableData).flatMap({ String(data: $0, encoding: .utf8) }
+                if let data = (self?.parentHandle?.availableData).flatMap({ String(data: $0, encoding: .utf8) }
                 ), !data.isEmpty {
                     DispatchQueue.main.async {
-                        if let range = data.ranges(of: /jbrown574.+?%\s/).first {
+                        let regex = try? Regex("\(self?.home ?? "" ).+?%\\s")
+                        if let regex, let range = data.ranges(of: regex).first {
                             let suffix = data[range]
                             self?.observed?.pwd = String(suffix)
                             var mutData = data
@@ -53,14 +57,14 @@ class TermSession: NSObject {
             }
         }
     }
-    
+    // Not using currently
     func flushOutput() {
         cachedOutput = ""
     }
     
     func write(_ command: String) {
         guard let command = command.data(using: .utf8) else { return }
-        tty?.write(command)
+        parentHandle?.write(command)
     }
     
     func run() {
@@ -78,11 +82,12 @@ class TermSession: NSObject {
 class TextViewModel: ObservableObject {
     @Published var text: String = ""
 }
-class CommandViewModel: ObservableObject {
+
+class TermWindowViewModel: ObservableObject {
     enum Constants {
         static let maxLength = 20
     }
-    lazy var session: TermSession = TermSession(observed: self)
+    lazy var session: PseudoTTYSession = PseudoTTYSession(observed: self)
     var textViewModel = TextViewModel()
     @Published var pwd = ""
     init() {
@@ -91,6 +96,7 @@ class CommandViewModel: ObservableObject {
     
     @Published var output: String = ""
     var outPutBuffer: String = "" {
+        //FIXME: not how this should be implemented, just an example
         didSet {
             if let range = outPutBuffer.ranges(of: "sys-clrAll").last {
                 output = String(outPutBuffer.suffix(from: range.lowerBound))
