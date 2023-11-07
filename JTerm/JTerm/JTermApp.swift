@@ -9,10 +9,9 @@ import SwiftUI
 
 @main
 struct JTermApp: App {
-    let viewModel: TermWindowViewModel = TermWindowViewModel()
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: viewModel)
+            ContentView(viewModel: TermWindowViewModel())
         }
     }
 }
