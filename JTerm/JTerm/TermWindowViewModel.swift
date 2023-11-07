@@ -17,10 +17,17 @@ class PseudoTTYSession: NSObject {
     private weak var observed: TermWindowViewModel?
     
     enum Constants {
-        static let user: String = FileManager.default.homeDirectoryForCurrentUser.lastPathComponent
+        private static let user: String = FileManager.default.homeDirectoryForCurrentUser.lastPathComponent
         static let pwdRegex: Regex? = { try? Regex("\(user).+?%\\s") }()
     }
     
+    // NOTE: This will be a problem later I think, but I think abstracting too early could make stuff confusing.
+    // Why a problem: TermWindowViewModel and PseudoTTYSession should probably not have direct access to eachother.
+    // The process we read and get our data from.
+    // 1) I think it would make sense to have a data model that parses the output of this and TermWindowViewModel
+    // Could have a reference to that.
+    // 2) Could have a publisher here or on a data model (see swift combine)
+    // 3) combination of 1/2 or some other solution
     init(observed: TermWindowViewModel) {
         self.observed = observed
         self.task = Process()
@@ -103,6 +110,12 @@ class PseudoTTYSession: NSObject {
     }
     
     @Published var output: String = ""
+    // FIXME: Currently keep/render ALL of the output text, should have only the most recent
+    // What "most recent" is is what makes this difficult.
+    // For example - if we do: output = outputBuffer.suffix(maxLength: 1000) this will make
+    // it so we are only displayting the last 1000 chars received, but that seems kind of arbitrary.
+    // Sometimes things generate a lot of output and you might want to go back and read it.
+    // ALSO: Is outputBuffer even the right name for this? lol.
     var outPutBuffer: String = "" {
         //FIXME: not how this should be implemented, just an example
         didSet {
