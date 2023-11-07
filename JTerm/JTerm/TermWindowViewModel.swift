@@ -123,6 +123,11 @@ class PseudoTTYSession: NSObject {
     var outPutBuffer: String = "" {
         //FIXME: not how this should be implemented, just an example
         didSet {
+            // Custom command we can enter to clear all of the text history.
+            // This is a temporary solution to the above FIXME but also an
+            // interesting idea I think. Though I wonder if we are breaking separation
+            // of concerns by letting the terminal emu define its own commands?
+            // This may be more of a shell task.
             if let range = outPutBuffer.ranges(of: "sys-clrAll").last {
                 output = String(outPutBuffer.suffix(from: range.lowerBound))
             } else {
