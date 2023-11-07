@@ -51,21 +51,27 @@ class PseudoTTYSession: NSObject {
     func pollData() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             while self?.task?.isRunning == .some(true) {
-                if let data = (self?.parentHandle?.availableData).flatMap({ 
-                    String(data: $0, encoding: .utf8)
-                }), !data.isEmpty {
-                    // Dispatch back to main - all UI updates must happen on the main thread
-                    DispatchQueue.main.async {
-                        if let pwdRegex = Constants.pwdRegex, let range = data.ranges(of: pwdRegex).first {
-                            let suffix = data[range]
-                            self?.observed?.pwd = String(suffix)
-                            var mutData = data
-                            mutData.removeSubrange(range)
-                            self?.observed?.outPutBuffer.append(mutData)
-                        } else {
-                            self?.observed?.outPutBuffer.append(data)
-                        }
+                // Check if there is data present, otherwise continue (i.e. don't dispatch to main)
+                guard
+                    let data = (self?.parentHandle?.availableData).flatMap({
+                        String(data: $0, encoding: .utf8)
+                    }),
+                    !data.isEmpty else { continue }
+                // Dispatch back to main - all UI updates must happen on the main thread
+                DispatchQueue.main.async {
+                    guard 
+                        let pwdRegex = Constants.pwdRegex,
+                        let range = data.ranges(of: pwdRegex).first
+                    else {
+                        self?.observed?.outputData.append(data)
+                        return
                     }
+                    let suffix = data[range]
+                    self?.observed?.pwd = String(suffix)
+                    var mutData = data
+                    mutData.removeSubrange(range)
+                    self?.observed?.outputData.append(mutData)
+                    self?.observed?.outputData.append(data)
                 }
             }
         }
@@ -116,11 +122,10 @@ class PseudoTTYSession: NSObject {
     // new commands will start to take longer, this is because every time we receive new output,
     // Our view gets updated and we have to re render everything (lol).
     // What "most recent" is is what makes this difficult.
-    // For example - if we do: output = outputBuffer.suffix(maxLength: 1000) this will make
+    // For example - if we do: output = outputData.suffix(maxLength: 1000) this will make
     // it so we are only displayting the last 1000 chars received, but that seems kind of arbitrary.
     // Sometimes things generate a lot of output and you might want to go back and read it.
-    // ALSO: Is outputBuffer even the right name for this? lol.
-    var outPutBuffer: String = "" {
+    var outputData: String = "" {
         //FIXME: not how this should be implemented, just an example
         didSet {
             // Custom command we can enter to clear all of the text history.
@@ -128,10 +133,10 @@ class PseudoTTYSession: NSObject {
             // interesting idea I think. Though I wonder if we are breaking separation
             // of concerns by letting the terminal emu define its own commands?
             // This may be more of a shell task.
-            if let range = outPutBuffer.ranges(of: "sys-clrAll").last {
-                output = String(outPutBuffer.suffix(from: range.lowerBound))
+            if let range = outputData.ranges(of: "sys-clrAll").last {
+                output = String(outputData.suffix(from: range.lowerBound))
             } else {
-                output = outPutBuffer
+                output = outputData
             }
         }
     }
