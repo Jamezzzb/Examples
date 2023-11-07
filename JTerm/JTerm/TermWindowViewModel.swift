@@ -51,8 +51,9 @@ class PseudoTTYSession: NSObject {
     func pollData() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             while self?.task?.isRunning == .some(true) {
-                if let data = (self?.parentHandle?.availableData).flatMap({ String(data: $0, encoding: .utf8) }
-                ), !data.isEmpty {
+                if let data = (self?.parentHandle?.availableData).flatMap({ 
+                    String(data: $0, encoding: .utf8)
+                }), !data.isEmpty {
                     // Dispatch back to main - all UI updates must happen on the main thread
                     DispatchQueue.main.async {
                         if let pwdRegex = Constants.pwdRegex, let range = data.ranges(of: pwdRegex).first {
@@ -111,6 +112,9 @@ class PseudoTTYSession: NSObject {
     
     @Published var output: String = ""
     // FIXME: Currently keep/render ALL of the output text, should have only the most recent
+    // To see why this is a problem, do some commands that generate a bunch of output.
+    // new commands will start to take longer, this is because every time we receive new output,
+    // Our view gets updated and we have to re render everything (lol).
     // What "most recent" is is what makes this difficult.
     // For example - if we do: output = outputBuffer.suffix(maxLength: 1000) this will make
     // it so we are only displayting the last 1000 chars received, but that seems kind of arbitrary.
