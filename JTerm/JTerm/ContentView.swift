@@ -43,6 +43,7 @@ struct InputView: View {
             .foregroundStyle(Color.green)
             .onSubmit {
                 try? viewModel.zsh()
+                textViewModel.clear()
             }
     }
 }

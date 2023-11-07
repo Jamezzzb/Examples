@@ -84,6 +84,9 @@ class PseudoTTYSession: NSObject {
 
 class TextViewModel: ObservableObject {
     @Published var text: String = ""
+    func clear() {
+        self.text = ""
+    }
 }
 
 class TermWindowViewModel: ObservableObject {
