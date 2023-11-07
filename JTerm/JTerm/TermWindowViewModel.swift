@@ -15,7 +15,11 @@ class PseudoTTYSession: NSObject {
     // TODO: not currently using this
     private var cachedOutput: String = ""
     private weak var observed: TermWindowViewModel?
-    private var home: String = "\(FileManager.default.homeDirectoryForCurrentUser.lastPathComponent)"
+    
+    enum Constants {
+        static let user: String = FileManager.default.homeDirectoryForCurrentUser.lastPathComponent
+        static let pwdRegex: Regex? = { try? Regex("\(user).+?%\\s") }()
+    }
     
     init(observed: TermWindowViewModel) {
         self.observed = observed
@@ -37,13 +41,12 @@ class PseudoTTYSession: NSObject {
     
     // TODO: This won't scale well, find better way to do or at least absract
     func pollData() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        DispatchQueue.global(qos: .background).async { [weak self] in
             while self?.task?.isRunning == .some(true) {
                 if let data = (self?.parentHandle?.availableData).flatMap({ String(data: $0, encoding: .utf8) }
                 ), !data.isEmpty {
                     DispatchQueue.main.async {
-                        let regex = try? Regex("\(self?.home ?? "" ).+?%\\s")
-                        if let regex, let range = data.ranges(of: regex).first {
+                        if let pwdRegex = Constants.pwdRegex, let range = data.ranges(of: pwdRegex).first {
                             let suffix = data[range]
                             self?.observed?.pwd = String(suffix)
                             var mutData = data
@@ -73,7 +76,7 @@ class PseudoTTYSession: NSObject {
                 try self?.task?.run()
                 self?.pollData()
             } catch {
-                fatalError("failed to start task")
+                fatalError("PseudoTTY Failed To Start")
             }
         }
     }
