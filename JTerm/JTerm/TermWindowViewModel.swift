@@ -39,12 +39,14 @@ class PseudoTTYSession: NSObject {
         self.task?.standardError = childHandle
     }
     
-    // TODO: This won't scale well, find better way to do or at least absract
+    // TODO: This won't scale well
+    // find better way to do: Outputstream?, Dispatch Group?, Some kind of job hanldler
     func pollData() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             while self?.task?.isRunning == .some(true) {
                 if let data = (self?.parentHandle?.availableData).flatMap({ String(data: $0, encoding: .utf8) }
                 ), !data.isEmpty {
+                    // Dispatch back to main - all UI updates must happen on the main thread
                     DispatchQueue.main.async {
                         if let pwdRegex = Constants.pwdRegex, let range = data.ranges(of: pwdRegex).first {
                             let suffix = data[range]
@@ -82,14 +84,14 @@ class PseudoTTYSession: NSObject {
     }
 }
 
-class TextViewModel: ObservableObject {
+@MainActor class TextViewModel: ObservableObject {
     @Published var text: String = ""
     func clear() {
         self.text = ""
     }
 }
 
-class TermWindowViewModel: ObservableObject {
+@MainActor class TermWindowViewModel: ObservableObject {
     enum Constants {
         static let maxLength = 20
     }
