@@ -14,9 +14,10 @@ struct TermWindowView: View {
                 ForEach(0..<viewModel.visibleOutput.count, id: \.self) {
                     index in
                     Text(viewModel.visibleOutput[index])
+                        .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .font(.custom("ComicCode-Medium", size: 20))
-                        .foregroundStyle(Color.green)
+                        .foregroundStyle(Color.pink)
                         .flippedUpsideDown()
                 }.flippedUpsideDown()
                 HStack(spacing: .zero) {
@@ -28,7 +29,7 @@ struct TermWindowView: View {
             }.flippedUpsideDown()
         }.flippedUpsideDown()
         .background {
-            Color(red: 0, green: 0, blue: 0.25)
+            Color(red: 0, green: 0, blue: 0)
         }
     }
 }

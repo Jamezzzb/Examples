@@ -17,6 +17,7 @@ struct InputView: View {
             .foregroundStyle(Color.green)
             .onSubmit {
                 try? viewModel.zsh()
+                viewModel.lineOffset = 0
                 textViewModel.clear()
             }
     }

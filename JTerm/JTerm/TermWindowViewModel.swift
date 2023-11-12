@@ -13,11 +13,9 @@ import Combine
 final class PseudoTTYSession: NSObject {
     // MARK: Publishers
     private var dataReader = CurrentValueSubject<[String], Never>([])
-    private lazy var lines = CurrentValueSubject<String, Never>("")
+    private var pwdReader = CurrentValueSubject<String, Never>("")
     lazy var dataPublisher = dataReader.eraseToAnyPublisher()
-    lazy var dataHistory = dataBuffer.collect(100)
-    lazy var dataBuffer = dataReader.buffer(size: 100, prefetch: .keepFull, whenFull: .dropOldest)
-    lazy var pwdPublisher = CurrentValueSubject<String, Never>("")
+    lazy var pwdPublisher = pwdReader.eraseToAnyPublisher()
     
     private var task: Process?
     private var childHandle: FileHandle?
@@ -62,7 +60,7 @@ final class PseudoTTYSession: NSObject {
                         .map(String.init))
                 continue
             }
-            pwdPublisher.value = String(data[range])
+            pwdReader.value = String(data[range])
             var mutdata = data
             mutdata.removeSubrange(range)
             dataReader.value
@@ -97,45 +95,51 @@ final class PseudoTTYSession: NSObject {
     enum Constants {
         static let maxLength = 20
     }
-    lazy var session: PseudoTTYSession = PseudoTTYSession()
-    var textViewModel = TextViewModel()
-    var outputSubscriber: AnyCancellable?
-    var pwdSubscriber: AnyCancellable?
-    var lineCountSubcriber: AnyCancellable?
+    private lazy var session: PseudoTTYSession = PseudoTTYSession()
+    private var cancelables: [AnyCancellable] = []
+    private (set) var textViewModel = TextViewModel()
     var lineOffset: Int {
-        set { 
-            guard abs(newValue) <= output.count else { return }
-            _lineOffset = newValue
+        set {
+            guard 
+                abs(newValue) <= output.count,
+                newValue <= 0
+            else { return }
+            _lineOffset.value = newValue
         }
-        get { _lineOffset }
+        get { _lineOffset.value }
     }
-    // WORK IN PROGRESS SUPPOSED TO PAGE UP/PAGE DOWN
-    var _lineOffset: Int = 0 {
+    // MARK: Scrolling with arrows
+    private var _lineOffset = CurrentValueSubject<Int, Never>(0) {
         willSet {
             guard lineRange.count >= 100 else { return }
-            let lower = newValue < 0 ? max(lineRange.lowerBound + newValue, 0) :
-            max(lineRange.lowerBound - newValue, 0)
-            let upper = min(max(lineRange.upperBound + newValue, 0), max(lineRange.upperBound - newValue, 0))
+            let lower = max(lineRange.lowerBound + newValue.value, 0)
+            let upper = max(lineRange.upperBound + newValue.value, 0)
             if !(lower..<upper).isEmpty {
                 visibleOutput = Array(output[(lower..<upper)])
             }
         }
     }
     @Published var pwd = ""
-    var lineRange: Range<Int> = (0..<0)
+    private var lineRange: Range<Int> = (0..<0)
     init() {
         Task {
             await session.run()
         }
-        outputSubscriber = session
+        subscribe()
+    }
+    
+    private func subscribe() {
+        session
             .dataPublisher
             .receive(on: DispatchQueue.main)
             .assign(to: \.output, on: self)
-        pwdSubscriber = session
+            .store(in: &cancelables)
+        session
             .pwdPublisher
             .receive(on: DispatchQueue.main)
             .assign(to: \.pwd, on: self)
-        lineCountSubcriber = session
+            .store(in: &cancelables)
+        session
             .dataPublisher
             .receive(on: DispatchQueue.main)
             .map(\.count)
@@ -144,7 +148,24 @@ final class PseudoTTYSession: NSObject {
                 let lower = max(upper - 100, 0)
                 self?.lineRange = (lower..<upper)
             }
-        
+            .store(in: &cancelables)
+        _lineOffset
+            .sink { [weak self] newValue in
+                guard 
+                    self?.lineRange.count ?? 0 >= 100,
+                    let lowerBound = self?.lineRange.lowerBound,
+                    let upperBound = self?.lineRange.upperBound
+                else {
+                    return
+                }
+                let lower = max(lowerBound + newValue, 0)
+                let upper = max(upperBound + newValue, 0)
+                if !(lower..<upper).isEmpty {
+                    self?.visibleOutput = Array(self?.output[(lower..<upper)] ?? [])
+                }
+            }
+            .store(in: &cancelables)
+
     }
     
     private var output: [String] = [] {
@@ -157,15 +178,6 @@ final class PseudoTTYSession: NSObject {
         }
     }
     @Published var visibleOutput: [String] = []
-        
-    // FIXME: Currently keep/render ALL of the output text, should have only the most recent
-    // To see why this is a problem, do some commands that generate a bunch of output.
-    // new commands will start to take longer, this is because every time we receive new output,
-    // Our view gets updated and we have to re render everything (lol).
-    // What "most recent" is is what makes this difficult.
-    // For example - if we do: output = outputData.suffix(maxLength: 1000) this will make
-    // it so we are only displayting the last 1000 chars received, but that seems kind of arbitrary.
-    // Sometimes things generate a lot of output and you might want to go back and read it.
     func zsh() throws {
         session.write(textViewModel.text + "\r")
     }
