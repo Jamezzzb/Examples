@@ -6,30 +6,29 @@
 //
 
 import Foundation
+import SwiftUI
+import Combine
 /// modified from https://stackoverflow.com/a/55230753
 /// creates a pair of parent and child pseudo-terminal `FileHandle` objects
-class PseudoTTYSession: NSObject {
+final class PseudoTTYSession: NSObject {
+    // MARK: Publishers
+    private var dataReader = CurrentValueSubject<[String], Never>([])
+    private lazy var lines = CurrentValueSubject<String, Never>("")
+    lazy var dataPublisher = dataReader.eraseToAnyPublisher()
+    lazy var dataHistory = dataBuffer.collect(100)
+    lazy var dataBuffer = dataReader.buffer(size: 100, prefetch: .keepFull, whenFull: .dropOldest)
+    lazy var pwdPublisher = CurrentValueSubject<String, Never>("")
+    
     private var task: Process?
     private var childHandle: FileHandle?
     private var parentHandle: FileHandle?
-    // TODO: not currently using this
-    private var cachedOutput: String = ""
-    private weak var observed: TermWindowViewModel?
     
     enum Constants {
         private static let user: String = FileManager.default.homeDirectoryForCurrentUser.lastPathComponent
         static let pwdRegex: Regex? = { try? Regex("\(user).+?%\\s") }()
     }
     
-    // NOTE: This will be a problem later I think, but I think abstracting too early could make stuff confusing.
-    // Why a problem: TermWindowViewModel and PseudoTTYSession should probably not have direct access to eachother.
-    // The process we read and get our data from.
-    // 1) I think it would make sense to have a data model that parses the output of this and TermWindowViewModel
-    // Could have a reference to that.
-    // 2) Could have a publisher here or on a data model (see swift combine)
-    // 3) combination of 1/2 or some other solution
-    init(observed: TermWindowViewModel) {
-        self.observed = observed
+    override init() {
         self.task = Process()
         var parentFD: Int32 = 0
         parentFD = posix_openpt(O_RDWR)
@@ -44,79 +43,121 @@ class PseudoTTYSession: NSObject {
         self.task?.standardOutput = childHandle
         self.task?.standardInput = childHandle
         self.task?.standardError = childHandle
+        
     }
     
-    // TODO: This won't scale well
-    // find better way to do: Outputstream?, Dispatch Group?, Some kind of job hanldler
-    func pollData() {
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            while self?.task?.isRunning == .some(true) {
-                // Check if there is data present, otherwise continue (i.e. don't dispatch to main)
-                guard
-                    let data = (self?.parentHandle?.availableData).flatMap({
-                        String(data: $0, encoding: .utf8)
-                    }),
-                    !data.isEmpty else { continue }
-                // Dispatch back to main - all UI updates must happen on the main thread
-                DispatchQueue.main.async {
-                    guard 
-                        let pwdRegex = Constants.pwdRegex,
-                        let range = data.ranges(of: pwdRegex).first
-                    else {
-                        self?.observed?.outputData.append(data)
-                        return
-                    }
-                    let suffix = data[range]
-                    self?.observed?.pwd = String(suffix)
-                    var mutData = data
-                    mutData.removeSubrange(range)
-                    self?.observed?.outputData.append(mutData)
-                    self?.observed?.outputData.append(data)
-                }
+    func pollData() async {
+        while task?.isRunning == .some(true) {
+            guard
+                let data = (parentHandle?.availableData).flatMap({
+                    String.init(decoding: $0, as: UTF8.self)
+                }), !data.isEmpty else { continue }
+            guard
+                let pwdRegex = Constants.pwdRegex,
+                let range = data.ranges(of: pwdRegex).first
+            else {
+                dataReader.value
+                    .append(contentsOf: data
+                        .split(whereSeparator: \.isNewline)
+                        .map(String.init))
+                continue
             }
+            pwdPublisher.value = String(data[range])
+            var mutdata = data
+            mutdata.removeSubrange(range)
+            dataReader.value
+                .append(contentsOf: mutdata
+                        .split(whereSeparator: \.isNewline)
+                        .map(String.init))
         }
-    }
-    // Not using currently
-    func flushOutput() {
-        cachedOutput = ""
     }
     
     func write(_ command: String) {
-        guard let command = command.data(using: .utf8) else { return }
-        parentHandle?.write(command)
+        parentHandle?.write(Data(command.utf8))
     }
     
-    func run() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            do {
-                try self?.task?.run()
-                self?.pollData()
-            } catch {
-                fatalError("PseudoTTY Failed To Start")
-            }
+    func run() async {
+        do {
+            try task?.run()
+            await pollData()
+        } catch {
+            fatalError("PseudoTTY Failed To Start")
         }
     }
 }
 
-@MainActor class TextViewModel: ObservableObject {
+@MainActor final class TextViewModel: ObservableObject {
     @Published var text: String = ""
     func clear() {
         self.text = ""
     }
 }
 
-@MainActor class TermWindowViewModel: ObservableObject {
+@MainActor final class TermWindowViewModel: ObservableObject {
     enum Constants {
         static let maxLength = 20
     }
-    lazy var session: PseudoTTYSession = PseudoTTYSession(observed: self)
+    lazy var session: PseudoTTYSession = PseudoTTYSession()
     var textViewModel = TextViewModel()
+    var outputSubscriber: AnyCancellable?
+    var pwdSubscriber: AnyCancellable?
+    var lineCountSubcriber: AnyCancellable?
+    var lineOffset: Int {
+        set { 
+            guard abs(newValue) <= output.count else { return }
+            _lineOffset = newValue
+        }
+        get { _lineOffset }
+    }
+    // WORK IN PROGRESS SUPPOSED TO PAGE UP/PAGE DOWN
+    var _lineOffset: Int = 0 {
+        willSet {
+            guard lineRange.count >= 100 else { return }
+            let lower = newValue < 0 ? max(lineRange.lowerBound + newValue, 0) :
+            max(lineRange.lowerBound - newValue, 0)
+            let upper = min(max(lineRange.upperBound + newValue, 0), max(lineRange.upperBound - newValue, 0))
+            if !(lower..<upper).isEmpty {
+                visibleOutput = Array(output[(lower..<upper)])
+            }
+        }
+    }
     @Published var pwd = ""
+    var lineRange: Range<Int> = (0..<0)
     init() {
-        session.run()
+        Task {
+            await session.run()
+        }
+        outputSubscriber = session
+            .dataPublisher
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.output, on: self)
+        pwdSubscriber = session
+            .pwdPublisher
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.pwd, on: self)
+        lineCountSubcriber = session
+            .dataPublisher
+            .receive(on: DispatchQueue.main)
+            .map(\.count)
+            .sink { [weak self] in
+                let upper = max($0, 0)
+                let lower = max(upper - 100, 0)
+                self?.lineRange = (lower..<upper)
+            }
+        
     }
     
-    @Published var output: String = ""
+    private var output: [String] = [] {
+        willSet {
+            guard !lineRange.isEmpty else {
+                visibleOutput = output
+                return
+            }
+            visibleOutput = Array(newValue[lineRange])
+        }
+    }
+    @Published var visibleOutput: [String] = []
+        
     // FIXME: Currently keep/render ALL of the output text, should have only the most recent
     // To see why this is a problem, do some commands that generate a bunch of output.
     // new commands will start to take longer, this is because every time we receive new output,
@@ -125,24 +166,8 @@ class PseudoTTYSession: NSObject {
     // For example - if we do: output = outputData.suffix(maxLength: 1000) this will make
     // it so we are only displayting the last 1000 chars received, but that seems kind of arbitrary.
     // Sometimes things generate a lot of output and you might want to go back and read it.
-    var outputData: String = "" {
-        //FIXME: not how this should be implemented, just an example
-        didSet {
-            // Custom command we can enter to clear all of the text history.
-            // This is a temporary solution to the above FIXME but also an
-            // interesting idea I think. Though I wonder if we are breaking separation
-            // of concerns by letting the terminal emu define its own commands?
-            // This may be more of a shell task.
-            if let range = outputData.ranges(of: "sys-clrAll").last {
-                output = String(outputData.suffix(from: range.lowerBound))
-            } else {
-                output = outputData
-            }
-        }
-    }
-    
     func zsh() throws {
-        session.write(textViewModel.text + "\n")
+        session.write(textViewModel.text + "\r")
     }
 }
 

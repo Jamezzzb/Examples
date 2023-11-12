@@ -12,6 +12,7 @@ struct InputView: View {
     @ObservedObject var viewModel: TermWindowViewModel
     var body: some View {
         TextField("", text: $textViewModel.text)
+            .textFieldStyle(.plain)
             .font(.custom("ComicCode-Medium", size: 20))
             .foregroundStyle(Color.green)
             .onSubmit {
