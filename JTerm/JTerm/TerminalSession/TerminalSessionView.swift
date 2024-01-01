@@ -3,10 +3,10 @@ import ComposableArchitecture
 import Output
 import Input
 
-public struct SessionView: View {
-    @ObservedObject var store: Store<SessionState, SessionAction>
+public struct TerminalSessionView: View {
+    @ObservedObject var store: Store<TerminalSessionState, TerminalSessionAction>
     
-    public init() {
+    init() {
         self.store = sessionStore(sessionReducer)
     }
     
@@ -15,13 +15,13 @@ public struct SessionView: View {
             OutputView(
                 store: store.view(
                     value: \.output,
-                    action: SessionAction.cases.output
+                    action: TerminalSessionAction.cases.output
                 )
             )
             InputView(
                 store: store.view(
                     value: \.input,
-                    action: SessionAction.cases.input
+                    action: TerminalSessionAction.cases.input
                 )
             )
         }

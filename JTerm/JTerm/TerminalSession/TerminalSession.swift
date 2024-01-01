@@ -1,4 +1,6 @@
-public final class Session: NSObject {
+import Foundation
+
+public final class TerminalSession: NSObject {
     private var task: Process?
     private var childHandle: FileHandle?
     private(set) var parentHandle: FileHandle?
