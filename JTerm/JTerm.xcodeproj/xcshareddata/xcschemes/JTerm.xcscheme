@@ -28,6 +28,41 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "69BB14482B43358F00B94729"
+               BuildableName = "OutputTests.xctest"
+               BlueprintName = "OutputTests"
+               ReferencedContainer = "container:JTerm.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "69BB14702B433C4A00B94729"
+               BuildableName = "InputTests.xctest"
+               BlueprintName = "InputTests"
+               ReferencedContainer = "container:JTerm.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "69BB14962B433E5800B94729"
+               BuildableName = "TerminalSessionTests.xctest"
+               BlueprintName = "TerminalSessionTests"
+               ReferencedContainer = "container:JTerm.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

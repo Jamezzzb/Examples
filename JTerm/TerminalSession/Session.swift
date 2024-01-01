@@ -1,11 +1,9 @@
-import Foundation
-
-final class PseudoTTYSession: NSObject {
+public final class Session: NSObject {
     private var task: Process?
     private var childHandle: FileHandle?
     private(set) var parentHandle: FileHandle?
     
-    override init() {
+    public override init() {
         self.task = Process()
         var parentFD: Int32 = 0
         parentFD = posix_openpt(O_RDWR)
@@ -23,11 +21,11 @@ final class PseudoTTYSession: NSObject {
         
     }
     
-    func write(_ command: String) {
+    public func write(_ command: String) {
         parentHandle?.write(Data(command.utf8))
     }
     
-    func run()  {
+    public func run()  {
         do {
             try task?.run()
         } catch {
@@ -35,3 +33,4 @@ final class PseudoTTYSession: NSObject {
         }
     }
 }
+
