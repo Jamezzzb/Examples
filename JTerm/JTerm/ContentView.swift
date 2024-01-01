@@ -1,21 +1,14 @@
-//
-//  ContentView.swift
-//  JTerm
-//
-//  Created by James Brown on 11/5/23.
-//
-
 import SwiftUI
+import ComposableArchitecture
 
 struct ContentView: View {
-    @ObservedObject var viewModel: TermWindowViewModel
     var body: some View {
-        TermWindowView(viewModel: viewModel)
+        TermWindowView(store: sessionStore(sessionReducer))
     }
 }
 
 #Preview {
-    ContentView(viewModel: TermWindowViewModel())
+    ContentView()
 }
 
 struct FlippedUpsideDown: ViewModifier {

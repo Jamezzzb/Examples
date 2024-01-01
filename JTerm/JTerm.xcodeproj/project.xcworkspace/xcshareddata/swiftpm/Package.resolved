@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "casepath",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Jamezzzb/CasePath.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1978fd8c376975752cc27393b439b86dcc2c382f"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
+        "version" : "509.0.2"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -1,24 +1,23 @@
-//
-//  InputView.swift
-//  JTerm
-//
-//  Created by James Brown on 11/6/23.
-//
-
 import SwiftUI
+import ComposableArchitecture
 
 struct InputView: View {
-    @ObservedObject var textViewModel: TextViewModel
-    @ObservedObject var viewModel: TermWindowViewModel
+    @ObservedObject var store: Store<String, CommandAction>
     var body: some View {
-        TextField("", text: $textViewModel.text)
+        TextField("", text: binding())
             .textFieldStyle(.plain)
             .font(.custom("ComicCode-Medium", size: 20))
             .foregroundStyle(Color.green)
             .onSubmit {
-                try? viewModel.zsh()
-                viewModel.lineOffset = 0
-                textViewModel.clear()
+                store.send(.submit)
             }
+    }
+    
+    func binding() -> Binding<String> {
+        Binding<String> {
+            store.value
+        } set: { newValue in
+            store.send(.write(newValue))
+        }
     }
 }
