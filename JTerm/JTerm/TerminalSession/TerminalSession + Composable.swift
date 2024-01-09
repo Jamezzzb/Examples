@@ -11,14 +11,18 @@ enum TerminalSessionAction {
 }
 
 public struct TerminalSessionState {
-    private let session = TerminalSession()
-    func run() { session.run() }
-    var handle: FileHandle? { session.parentHandle }
+    private let session: TerminalSession
+    var handle: FileHandle?
     var output: Output.Element = (tty: "", pwd: "")
-    var input = "" {
-        didSet { session.write(input) }
+    var input: (buffer: String, handle: FileHandle?)
+    init() {
+        let session = TerminalSession()
+        self.session = session
+        self.handle = session.parentHandle
+        self.output = (tty: "", pwd: "")
+        self.input = (buffer: "", handle: session.parentHandle)
+        session.run()
     }
-    var task: Task<Void, Never>?
 }
 
 let sessionReducer = combine(
@@ -35,15 +39,15 @@ let sessionReducer = combine(
 )
 
 func sessionStore(
-    _ reducer: @escaping (
-        inout TerminalSessionState,
-        TerminalSessionAction
-    ) -> Void
+    _ reducer: @escaping Reducer<TerminalSessionState, TerminalSessionAction>
 ) -> Store<TerminalSessionState, TerminalSessionAction> {
-    let store = Store(initialValue: TerminalSessionState(), reducer: reducer)
+    let store = Store(
+        initialValue: TerminalSessionState(),
+        reducer: reducer
+    )
     Task { @MainActor [weak store] in
         for await data in Output(handle: store?.value.handle) {
-            store?.send(.output(.output(data)))
+            store?.send(.cases.output.embed(.output(data)))
         }
     }
     return store

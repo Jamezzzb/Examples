@@ -5,11 +5,15 @@ public enum OutputAction {
     case output(Output.Element)
 }
 
-public func outputReducer(_ value: inout Output.Element, action: OutputAction) {
+public let outputReducer: Reducer<
+    Output.Element,
+    OutputAction
+> = { value, action in
     switch action {
     case .output(let output):
         value.tty.append(output.tty)
         value.pwd = output.pwd
+        return []
     }
 }
 
@@ -19,7 +23,7 @@ public struct OutputView: View {
         self.store = store
     }
     public var body: some View {
-        VStack(spacing: .zero) {
+        VStack(alignment: .leading, spacing: .zero) {
             Text(store.value.tty)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)

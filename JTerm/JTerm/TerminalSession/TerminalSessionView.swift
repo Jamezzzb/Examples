@@ -20,16 +20,13 @@ public struct TerminalSessionView: View {
             )
             InputView(
                 store: store.view(
-                    value: \.input,
+                    value: \.input.buffer,
                     action: TerminalSessionAction.cases.input
                 )
             )
         }
         .background {
             Color(red: 0, green: 0, blue: 0)
-        }
-        .onAppear {
-            store.value.run()
         }
     }
 }

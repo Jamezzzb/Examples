@@ -9,18 +9,20 @@ public struct InputView: View {
     }
     
     public var body: some View {
-        TextEditor(text: binding())
+        TextField("", text: buffer())
             .textFieldStyle(.plain)
             .font(.custom("ComicCode-Medium", size: 20))
             .foregroundStyle(Color.green)
+            .onSubmit {
+                store.send(.writeToFile)
+            }
     }
     
-    func binding() -> Binding<String> {
+    func buffer() -> Binding<String> {
         Binding<String> {
             store.value
         } set: { newValue in
-            guard let last = newValue.last else { return }
-            store.send(.write(String(last)))
+            store.send(.writeToBuffer(newValue))
         }
     }
 }
