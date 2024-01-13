@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,6 +30,7 @@
 		69BB14CD2B434D5000B94729 /* TerminalSession + Composable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69BB14CC2B434D5000B94729 /* TerminalSession + Composable.swift */; };
 		69BB14CF2B434E3700B94729 /* TerminalSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69BB14CE2B434E3700B94729 /* TerminalSessionView.swift */; };
 		69BB14D22B43504E00B94729 /* CasePath in Frameworks */ = {isa = PBXBuildFile; productRef = 69BB14D12B43504E00B94729 /* CasePath */; };
+		9BABB1B32B533E0D00F036AF /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 9BABB1B22B533E0D00F036AF /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BABB1B32B533E0D00F036AF /* ComposableArchitecture in Frameworks */,
 				69BB147D2B433C4A00B94729 /* Input.framework in Frameworks */,
 				69BB14D22B43504E00B94729 /* CasePath in Frameworks */,
 				69BB14342B42439200B94729 /* ComposableArchitecture in Frameworks */,
@@ -259,6 +261,7 @@
 			packageProductDependencies = (
 				69BB14332B42439200B94729 /* ComposableArchitecture */,
 				69BB14D12B43504E00B94729 /* CasePath */,
+				9BABB1B22B533E0D00F036AF /* ComposableArchitecture */,
 			);
 			productName = JTerm;
 			productReference = 6932C3E92AF86C8300770856 /* JTerm.app */;
@@ -314,7 +317,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					6932C3E82AF86C8300770856 = {
 						CreatedOnToolsVersion = 15.0;
@@ -337,8 +340,8 @@
 			);
 			mainGroup = 6932C3E02AF86C8300770856;
 			packageReferences = (
-				69BB14322B42439200B94729 /* XCLocalSwiftPackageReference "../../dev/Stuff/ComposableArchitecture" */,
 				69BB14BF2B4341B700B94729 /* XCRemoteSwiftPackageReference "CasePath" */,
+				9BABB1B12B533E0D00F036AF /* XCRemoteSwiftPackageReference "ComposableArchitecture" */,
 			);
 			productRefGroup = 6932C3EA2AF86C8300770856 /* Products */;
 			projectDirPath = "";
@@ -460,6 +463,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -523,6 +527,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -554,6 +559,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"JTerm/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -562,6 +568,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = James.JTerm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -580,6 +587,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"JTerm/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -588,6 +596,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = James.JTerm;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -602,6 +611,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -615,6 +625,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -634,6 +645,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -647,6 +659,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -666,6 +679,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -679,6 +693,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -698,6 +713,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -711,6 +727,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -765,17 +782,18 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		69BB14322B42439200B94729 /* XCLocalSwiftPackageReference "../../dev/Stuff/ComposableArchitecture" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../dev/Stuff/ComposableArchitecture;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		69BB14BF2B4341B700B94729 /* XCRemoteSwiftPackageReference "CasePath" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Jamezzzb/CasePath.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		9BABB1B12B533E0D00F036AF /* XCRemoteSwiftPackageReference "ComposableArchitecture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Jamezzzb/ComposableArchitecture";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -800,6 +818,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 69BB14BF2B4341B700B94729 /* XCRemoteSwiftPackageReference "CasePath" */;
 			productName = CasePath;
+		};
+		9BABB1B22B533E0D00F036AF /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9BABB1B12B533E0D00F036AF /* XCRemoteSwiftPackageReference "ComposableArchitecture" */;
+			productName = ComposableArchitecture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

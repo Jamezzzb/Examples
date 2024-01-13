@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "composablearchitecture",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Jamezzzb/ComposableArchitecture",
+      "state" : {
+        "branch" : "main",
+        "revision" : "34e8b1857dc1a039cc9877088ae26a891522c3ed"
+      }
+    },
+    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
